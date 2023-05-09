@@ -1,36 +1,30 @@
 <template>
   <div class="app">
     <h1>Posts page</h1>
-    <my-button>Получить посты</my-button>
     <my-button class="button" @click="showDialog">Create post</my-button>
     <post-list
+        v-if="!isPostsLoading"
         @remove="removePost"
         :posts="posts"
     />
+    <div v-else>Loading...</div>
     <my-dialog v-model:shown="dialogVisible">
       <post-form @create="addPost"/>
     </my-dialog>
   </div>
-
 </template>
 
 <script>
 import PostList from "@/components/PostList.vue";
 import PostForm from "@/components/PostForm.vue";
-import MyDialog from "@/components/UI/MyDialog.vue";
-import MyButton from "@/components/UI/MyButton.vue";
 import axios from "axios";
 export default {
-  components: {MyButton, MyDialog, PostList, PostForm},
+  components: { PostList, PostForm },
   data() {
     return {
-      posts: [
-        {id: 1, title: 'JavaScript', body: 'Описание поста 1'},
-        {id: 2, title: 'JavaScript', body: 'Описание поста 2'},
-        {id: 3, title: 'JavaScript', body: 'Описание поста 3'},
-        {id: 4, title: 'JavaScript', body: 'Описание поста 4'},
-      ],
-      dialogVisible: false
+      posts: [],
+      dialogVisible: false,
+      isPostsLoading: false
     }
   },
   methods: {
@@ -46,13 +40,24 @@ export default {
     showDialog() {
        this.dialogVisible = true
     },
-    async fetchUsers() {
+    async fetchPosts() {
       try {
-        const response = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
+        this.isPostsLoading = true
+        setTimeout(async() => {
+          const response = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
+          this.posts = response.data
+          this.isPostsLoading = false
+        }, 2000)
       } catch (e) {
         console.log(e)
+      } finally {
+        // this.isPostsLoading = false
       }
     }
+  },
+  mounted() {
+    console.log("MOUNTED")
+    this.fetchPosts()
   }
 }
 </script>
@@ -68,6 +73,9 @@ export default {
 }
 .button {
   margin: 20px 0;
+}
+.button:first-of-type {
+  margin-right: 10px;
 }
 
 </style>
